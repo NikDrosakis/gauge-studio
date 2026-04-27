@@ -1,0 +1,5 @@
+{
+  "API_URL": "http://192.168.100.177",
+  "API_WSS_ENABLE": "1",
+  "dashboard_version": "1.1.0"
+}

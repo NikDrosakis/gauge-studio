@@ -1,0 +1,328 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: #f5f5f5;
+}
+/* src/DiktisEditor.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: #f5f5f5;
+}
+
+.editor-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+/* ==================== LEFT PANEL - ELEMENTS SIDEBAR ==================== */
+.ElementsSidebar {
+    width: 72px;
+    background: #1a1a2e;
+    border-right: 1px solid #2d2d3d;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 8px;
+    gap: 8px;
+}
+
+.sidebar-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #2d2d3d;
+    border: 1px solid #3d3d4d;
+    border-radius: 12px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.sidebar-btn:hover {
+    background: #3d3d4d;
+    transform: scale(1.02);
+}
+
+.sidebar-btn.active {
+    background: #4a4a6a;
+    border-color: #ff6666;
+    box-shadow: 0 0 0 1px #ff6666;
+}
+
+/* ==================== CENTER CANVAS ==================== */
+/* Canvas Grid - dots pattern */
+.canvas-container {
+    flex: 1;
+    position: relative;
+    background: #ffffff !important;
+    overflow: hidden;
+    cursor: crosshair;
+    background-image: radial-gradient(circle, #ccc 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Για πιο λεπτό grid (σαν χαρτί μιλιμετρέ) */
+.canvas-container.detailed-grid {
+    background-image:
+            radial-gradient(circle, #ddd 0.5px, transparent 0.5px),
+            radial-gradient(circle, #eee 0.3px, transparent 0.3px);
+    background-size: 10px 10px, 20px 20px;
+    background-position: 0 0, 5px 5px;
+}
+
+/* Optional: grid lines instead of dots */
+.canvas-container.grid-lines {
+    background-image:
+            linear-gradient(to right, #eee 1px, transparent 1px),
+            linear-gradient(to bottom, #eee 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.canvas-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #aaa;
+    font-size: 18px;
+    text-align: center;
+    pointer-events: none;
+}
+
+/* ==================== GAUGE COMPONENT ==================== */
+.gauge-container {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    cursor: pointer;
+}
+
+.gauge-container.selected {
+    outline: 3px solid #ff6666;
+    outline-offset: 2px;
+    border-radius: 50%;
+}
+
+/* Resize handles - εμφανίζονται όταν είναι selected */
+.gauge-container.selected::before,
+.gauge-container.selected::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #ff6666;
+    border: 2px solid white;
+    border-radius: 50%;
+    z-index: 100;
+}
+
+.gauge-container.selected::before {
+    top: -6px;
+    left: -6px;
+    cursor: nw-resize;
+}
+
+.gauge-container.selected::after {
+    top: -6px;
+    right: -6px;
+    cursor: ne-resize;
+}
+
+/* Additional resize handles */
+.gauge-container.selected .resize-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #ff6666;
+    border: 2px solid white;
+    border-radius: 50%;
+    z-index: 100;
+}
+
+.gauge-canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: block;
+}
+
+/* ==================== RIGHT PANEL - PROPERTIES ==================== */
+.properties-panel {
+    width: 340px;
+    background: #1a1a2e;
+    border-left: 1px solid #e0e0e0;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.properties-panel h3 {
+    color: #ff6666;
+    font-size: 18px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #333;
+}
+
+.prop-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.prop-group label {
+    color: #ccc;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.prop-group input[type="text"],
+.prop-group input[type="number"] {
+    background: #2d2d3d;
+    border: 1px solid #3d3d4d;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.prop-group input[type="text"]:focus,
+.prop-group input[type="number"]:focus {
+    outline: none;
+    border-color: #ff6666;
+}
+
+.prop-group input[type="range"] {
+    width: 100%;
+    height: 4px;
+    -webkit-appearance: none;
+    background: #3d3d4d;
+    border-radius: 2px;
+}
+
+.prop-group input[type="range"]:focus {
+    outline: none;
+}
+
+.prop-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #ff6666;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.prop-group input[type="color"] {
+    width: 100%;
+    height: 40px;
+    background: #2d2d3d;
+    border: 1px solid #3d3d4d;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.prop-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    accent-color: #ff6666;
+}
+
+.prop-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.properties-panel small {
+    display: block;
+    margin-top: 4px;
+}
+
+/* Scrollbar */
+.properties-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.properties-panel::-webkit-scrollbar-track {
+    background: #1a1a2e;
+}
+
+.properties-panel::-webkit-scrollbar-thumb {
+    background: #3d3d4d;
+    border-radius: 3px;
+}
+
+.properties-panel::-webkit-scrollbar-thumb:hover {
+    background: #ff6666;
+}
+
+/* Unit select dropdown */
+.unit-select {
+    width: 100%;
+    padding: 8px;
+    background: #2d2d3d;
+    border: 1px solid #3d3d4d;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.unit-select option {
+    background: #2d2d3d;
+    color: #fff;
+}
+
+.element-container.selected {
+    outline: 3px solid #ff6666;
+    outline-offset: 2px;
+}
+
+.gauge-container.selected {
+    outline: 3px solid #ff6666;
+    outline-offset: 2px;
+    border-radius: 50%;
+}
+
+
+
+
+
+/* Context menu animation */
+.context-menu {
+    animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.context-menu-item:active {
+    background-color: '#ff6666';
+}
