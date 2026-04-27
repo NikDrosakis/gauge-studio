@@ -4,6 +4,8 @@ import DiktisGauge from '../Components/Elements/DiktisGauge';
 import RectangleElement from '../Components/Elements/RectangleElement';
 import CircleElement from '../Components/Elements/CircleElement';
 import TextElement from '../Components/Elements/TextElement';
+import BooleanIndicator from '../Components/Elements/BooleanIndicator';
+import NumericIndicator from '../Components/Elements/NumericIndicator';
 import BarElement from '../Components/Elements/BarElement';
 import PropertiesPanel from '../Components/PropertiesPanel';
 import ContextMenu from '../Components/ContextMenu';
@@ -13,6 +15,9 @@ const Mimics = () => {
     const [elements, setElements] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
     const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, elementId: null });
+
+    // Default ship serial for standalone mode (NO useSelector)
+    const shipSerial = 'SV-T-ERGO-ATALANTI';
 
     const canvasRef = useRef(null);
     const nextId = useRef(1);
@@ -27,6 +32,42 @@ const Mimics = () => {
                 showValue: true, backgroundColor: "#1a1a2e", backgroundImage: "",
                 backgroundImageSize: 100, backgroundImageOpacity: 100,
             },
+            boolean: {
+                sensorTag: "",
+                label: `Indicator ${id}`,
+                showLabel: true,
+                offColor: "#555",
+                onColor: "#4CAF50",
+                offBorderColor: "#888",
+                onBorderColor: "#4CAF50",
+                offImage: "",
+                onImage: "",
+                borderRadius: 8,
+                fontSize: 10,
+                labelColor: "#fff"
+            },
+            numeric: {
+                sensorTag: "",
+                label: "",
+                showLabel: false,
+                value: 0,
+                unit: "",
+                decimals: 1,
+                textColor: "#ffffff",
+                backgroundColor: "transparent",
+                fontSize: 24,
+                fontWeight: "bold",
+                fontFamily: "monospace",
+                textAlign: "center",
+                borderRadius: 4,
+                borderWidth: 1,
+                borderColor: "#444",
+                thresholds: [
+                    { value: 80, color: "#ff4444" },
+                    { value: 60, color: "#ffaa00" },
+                    { value: 0, color: "#4CAF50" }
+                ]
+            },
             rectangle: { backgroundColor: "#3498db", border: "1px solid #2c3e50", borderRadius: 0 },
             circle: { backgroundColor: "#e74c3c", border: "1px solid #c0392b" },
             text: { text: `Text ${id}`, textColor: "#333333", fontSize: 16, fontFamily: "Arial" },
@@ -38,10 +79,12 @@ const Mimics = () => {
     const getDefaultSize = (type) => {
         const sizes = {
             diktis: { width: 200, height: 200 },
+            boolean: { width: 80, height: 80 },
             rectangle: { width: 120, height: 80 },
             circle: { width: 100, height: 100 },
             text: { width: 100, height: 40 },
             bar: { width: 50, height: 150 },
+            numeric: { width: 120, height: 50 },
         };
         return sizes[type] || { width: 100, height: 100 };
     };
@@ -109,6 +152,7 @@ const Mimics = () => {
             props: element.props,
             position: element.position,
             size: element.size,
+            shipSerial: shipSerial,
             isSelected: selectedId === element.id,
             onSelect: () => handleSelect(element.id),
             onDragEnd: (newPos) => updatePosition(element.id, newPos),
@@ -127,6 +171,10 @@ const Mimics = () => {
                 return <TextElement {...commonProps} />;
             case 'bar':
                 return <BarElement {...commonProps} />;
+            case 'boolean':
+                return <BooleanIndicator {...commonProps} />;
+            case 'numeric':
+                return <NumericIndicator {...commonProps} />;
             default:
                 return null;
         }

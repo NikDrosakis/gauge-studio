@@ -1,4 +1,3 @@
-// src/Components/ElementsSidebar.jsx
 import React from 'react';
 
 // SVG Icons αντί για imports (για να είναι ανεξάρτητο)
@@ -53,6 +52,17 @@ const Icons = {
             <path d="M448 80c8.8 0 16 7.2 16 16V415.8l-5-6.5-136-176c-4.5-5.9-11.6-9.3-19-9.3s-14.4 3.4-19 9.3L202 340.7l-30.5-42.7C167 291.7 159.8 288 152 288s-15 3.7-19.5 10.1l-80 112L48 416.3l0-.3V96c0-8.8 7.2-16 16-16H448zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm80 192a48 48 0 1 0 0-96 48 48 0 1 0 0 96z"/>
         </svg>
     ),
+    boolean: () => (
+        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm-2 16h4v2h-4z"/>
+        </svg>
+    ),
+    numeric: () => (
+        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" height="20" width="20">
+            <path d="M5 7h14v2H5V7zm0 4h14v2H5v-2zm0 4h14v2H5v-2z"/>
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+        </svg>
+    ),
 };
 
 // Tools definition
@@ -67,6 +77,8 @@ const tools = [
     { id: 'line', name: 'Line', icon: 'line', type: 'line' },
     { id: 'input', name: 'Input Field', icon: 'input', type: 'input' },
     { id: 'icon', name: 'Icon/Asset', icon: 'icon', type: 'icon' },
+    { id: 'boolean', name: 'Boolean Indicator', icon: 'boolean', type: 'boolean' },
+    { id: 'numeric', name: 'Numeric Indicator', icon: 'numeric', type: 'numeric' },
 ];
 
 const ElementsSidebar = ({ activeType, onStartDrag, onUnlockAll }) => {

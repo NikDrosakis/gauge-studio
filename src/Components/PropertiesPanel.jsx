@@ -1,8 +1,24 @@
-// src/Components/PropertiesPanel.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const PropertiesPanel = ({ selectedElement, onUpdate, onSizeChange }) => {
     console.log("PropertiesPanel rendering with:", selectedElement);
+
+    const [localImages, setLocalImages] = useState([]);
+    useEffect(() => {
+        // Δεν μπορείς να διαβάσεις directory από client-side χωρίς API
+        // Αλλά μπορείς να έχεις μια λίστα με paths
+        const imagesList = [
+            '/assets/gauges/gauge_left.jpg',
+            '/assets/gauges/gauge_right.jpg',
+            '/assets/gauges/poliorgano_poseidonia.png',
+            '/assets/gauges/poliorgano_xoris_labels.png',
+            '/assets/gauges/other_image.png',
+        ];
+        setLocalImages(imagesList);
+    }, []);
+
+    const [showCustomUrl, setShowCustomUrl] = useState(false);
+    const [customUrl, setCustomUrl] = useState('');
 
     if (!selectedElement) {
         return (
@@ -56,17 +72,6 @@ const PropertiesPanel = ({ selectedElement, onUpdate, onSizeChange }) => {
                     />
                 </div>
                 <div className="prop-group">
-                    <label>PLC Sensor Tag</label>
-                    <select value={p.sensorTag || ''} onChange={e => handleChange('sensorTag', e.target.value)}>
-                        <option value="">None</option>
-                        <option value="engine_speed">Engine Speed (RPM)</option>
-                        <option value="temperature">Temperature (°C)</option>
-                        <option value="pressure">Pressure (bar)</option>
-                        <option value="fuel_level">Fuel Level (%)</option>
-                        <option value="oil_pressure">Oil Pressure (bar)</option>
-                    </select>
-                </div>
-                <div className="prop-group">
                     <label>Height: {selectedElement.size?.height || 100}px</label>
                     <input
                         type="range"
@@ -77,10 +82,90 @@ const PropertiesPanel = ({ selectedElement, onUpdate, onSizeChange }) => {
                     />
                 </div>
             </div>
+            {type === 'numeric' && (
+                <>
+                    <div className="prop-group">
+                        <label>PLC Sensor Tag</label>
+                        <select value={p.sensorTag || ''} onChange={e => handleChange('sensorTag', e.target.value)}>
+                            <option value="">None (Manual)</option>
+                            <option value="engine_speed">Engine Speed (RPM)</option>
+                            <option value="temperature">Temperature (°C)</option>
+                            <option value="pressure">Pressure (bar)</option>
+                            <option value="fuel_level">Fuel Level (%)</option>
+                            <option value="oil_pressure">Oil Pressure (bar)</option>
+                        </select>
+                    </div>
 
+                    <div className="prop-group">
+                        <label>Label</label>
+                        <input type="text" value={p.label || ''} onChange={e => handleChange('label', e.target.value)} />
+                    </div>
+
+                    <div className="prop-group">
+                        <label>
+                            <input type="checkbox" checked={p.showLabel || false} onChange={e => handleChange('showLabel', e.target.checked)} />
+                            Show Label
+                        </label>
+                    </div>
+
+                    <div className="prop-row">
+                        <div className="prop-group">
+                            <label>Unit</label>
+                            <input type="text" value={p.unit || ''} onChange={e => handleChange('unit', e.target.value)} placeholder="RPM, °C, %" />
+                        </div>
+                        <div className="prop-group">
+                            <label>Decimals: {p.decimals || 1}</label>
+                            <input type="range" min="0" max="3" step="1" value={p.decimals || 1} onChange={e => handleChange('decimals', parseInt(e.target.value))} />
+                        </div>
+                    </div>
+
+                    <div className="prop-group">
+                        <label>Text Color</label>
+                        <input type="color" value={p.textColor || '#ffffff'} onChange={e => handleChange('textColor', e.target.value)} />
+                    </div>
+
+                    <div className="prop-group">
+                        <label>Background Color</label>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <input type="color" value={p.backgroundColor || 'transparent'} onChange={e => handleChange('backgroundColor', e.target.value)} />
+                            <button onClick={() => handleChange('backgroundColor', 'transparent')}>Transparent</button>
+                        </div>
+                    </div>
+
+                    <div className="prop-group">
+                        <label>Font Size: {p.fontSize || 24}px</label>
+                        <input type="range" min="10" max="72" step="2" value={p.fontSize || 24} onChange={e => handleChange('fontSize', parseInt(e.target.value))} />
+                    </div>
+
+                    <div className="prop-group">
+                        <label>Text Align</label>
+                        <select value={p.textAlign || 'center'} onChange={e => handleChange('textAlign', e.target.value)}>
+                            <option value="left">Left</option>
+                            <option value="center">Center</option>
+                            <option value="right">Right</option>
+                        </select>
+                    </div>
+
+                    <div className="prop-group">
+                        <label>Border Radius: {p.borderRadius || 4}px</label>
+                        <input type="range" min="0" max="20" step="1" value={p.borderRadius || 4} onChange={e => handleChange('borderRadius', parseInt(e.target.value))} />
+                    </div>
+                </>
+            )}
             {/* Diktis specific properties */}
             {type === 'diktis' && (
                 <>
+                    <div className="prop-group">
+                        <label>PLC Sensor Tag</label>
+                        <select value={p.sensorTag || ''} onChange={e => handleChange('sensorTag', e.target.value)}>
+                            <option value="">None</option>
+                            <option value="engine_speed">Engine Speed (RPM)</option>
+                            <option value="temperature">Temperature (°C)</option>
+                            <option value="pressure">Pressure (bar)</option>
+                            <option value="fuel_level">Fuel Level (%)</option>
+                            <option value="oil_pressure">Oil Pressure (bar)</option>
+                        </select>
+                    </div>
                     <div className="prop-group">
                         <label>Title</label>
                         <input type="text" value={p.title || ''} onChange={e => handleChange('title', e.target.value)} />
@@ -143,6 +228,52 @@ const PropertiesPanel = ({ selectedElement, onUpdate, onSizeChange }) => {
                     <div className="prop-group">
                         <label>Background Image URL</label>
                         <input type="text" value={p.backgroundImage || ''} onChange={e => handleChange('backgroundImage', e.target.value)} placeholder="https://example.com/image.png" />
+                        <select
+                            className="unit-select"
+                            value={p.backgroundImage || ''}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === '__custom__') {
+                                    setShowCustomUrl(true);
+                                    setCustomUrl('');
+                                    handleChange('backgroundImage', '');
+                                } else {
+                                    setShowCustomUrl(false);
+                                    handleChange('backgroundImage', value);
+                                }
+                            }}
+                        >
+                            <option value="">None</option>
+
+                            {/* Local images from public/assets/gauges/ */}
+                            <optgroup label="📁 Local Images">
+                                {localImages.map(img => (
+                                    <option key={img} value={img}>
+                                        {img.split('/').pop()}
+                                    </option>
+                                ))}
+                            </optgroup>
+
+                            <option value="__custom__">🔗 Custom URL...</option>
+                        </select>
+
+                        {/* Show custom URL input when selected */}
+                        {showCustomUrl && (
+                            <input
+                                type="text"
+                                value={customUrl}
+                                onChange={(e) => {
+                                    setCustomUrl(e.target.value);
+                                    handleChange('backgroundImage', e.target.value);
+                                }}
+                                placeholder="Enter image URL (e.g., https://example.com/image.png)"
+                                style={{ marginTop: 8, width: '100%', padding: 8, background: '#2d2d3d', border: '1px solid #555', borderRadius: 4, color: '#fff' }}
+                            />
+                        )}
+
+                        <small style={{ color: '#666', fontSize: 10, display: 'block', marginTop: 4 }}>
+                            Supported: local files (/assets/gauges/...) or external URLs (https://...)
+                        </small>
                     </div>
 
                     <div className="prop-group">
@@ -174,6 +305,10 @@ const PropertiesPanel = ({ selectedElement, onUpdate, onSizeChange }) => {
                     <div className="prop-group">
                         <label>Border Radius: {p.borderRadius || 0}px</label>
                         <input type="range" min="0" max="50" step="2" value={p.borderRadius || 0} onChange={e => handleChange('borderRadius', parseInt(e.target.value))} />
+                        <button
+                            onClick={() => handleChange('backgroundColor', 'transparent')}
+                            style={{ padding: '4px 8px', background: '#2d2d3d', border: '1px solid #555', borderRadius: '4px', color: '#fff', cursor: 'pointer' }}
+                        >Transparent</button>
                     </div>
                 </>
             )}
@@ -183,6 +318,10 @@ const PropertiesPanel = ({ selectedElement, onUpdate, onSizeChange }) => {
                 <div className="prop-group">
                     <label>Background Color</label>
                     <input type="color" value={p.backgroundColor || '#e74c3c'} onChange={e => handleChange('backgroundColor', e.target.value)} />
+                    <button
+                        onClick={() => handleChange('backgroundColor', 'transparent')}
+                        style={{ padding: '4px 8px', background: '#2d2d3d', border: '1px solid #555', borderRadius: '4px', color: '#fff', cursor: 'pointer' }}
+                    >Transparent</button>
                 </div>
             )}
 
@@ -221,6 +360,74 @@ const PropertiesPanel = ({ selectedElement, onUpdate, onSizeChange }) => {
                     </div>
                 </>
             )}
+            {type === 'boolean' && (
+                <>
+                    <div className="prop-group">
+                        <label>PLC Sensor Tag</label>
+                        <select value={p.sensorTag || ''} onChange={e => handleChange('sensorTag', e.target.value)}>
+                            <option value="">None</option>
+                            <option value="engine_ready">Engine Ready</option>
+                            <option value="zero_cpp">Zero CPP</option>
+                            <option value="command_mode">Command Mode (LOCAL/REMOTE)</option>
+                            <option value="lever_mode">Lever Mode (SEPARATED/NOT)</option>
+                            <option value="clutch_status">Clutch (OFF/ON)</option>
+                        </select>
+                    </div>
+
+                    <div className="prop-group">
+                        <label>Label</label>
+                        <input type="text" value={p.label || ''} onChange={e => handleChange('label', e.target.value)} />
+                    </div>
+
+                    <div className="prop-group">
+                        <label>
+                            <input type="checkbox" checked={p.showLabel !== false} onChange={e => handleChange('showLabel', e.target.checked)} />
+                            Show Label
+                        </label>
+                    </div>
+
+                    <div className="prop-row">
+                        <div className="prop-group">
+                            <label>OFF Color</label>
+                            <input type="color" value={p.offColor || '#555'} onChange={e => handleChange('offColor', e.target.value)} />
+                        </div>
+                        <div className="prop-group">
+                            <label>ON Color</label>
+                            <input type="color" value={p.onColor || '#4CAF50'} onChange={e => handleChange('onColor', e.target.value)} />
+                        </div>
+                    </div>
+
+                    <div className="prop-group">
+                        <label>Background Image (OFF)</label>
+                        <input type="text" value={p.offImage || ''} onChange={e => handleChange('offImage', e.target.value)} placeholder="/assets/indicator_off.png" />
+                    </div>
+
+                    <div className="prop-group">
+                        <label>Background Image (ON)</label>
+                        <input type="text" value={p.onImage || ''} onChange={e => handleChange('onImage', e.target.value)} placeholder="/assets/indicator_on.png" />
+                    </div>
+
+                    <div className="prop-group">
+                        <label>Border Radius: {p.borderRadius || 8}px</label>
+                        <input type="range" min="0" max="50" step="2" value={p.borderRadius || 8} onChange={e => handleChange('borderRadius', parseInt(e.target.value))} />
+                    </div>
+                </>
+            )}
+            <div className="prop-group">
+                <label>Background Image URL</label>
+                <input type="text" value={p.backgroundImage || ''} onChange={e => handleChange('backgroundImage', e.target.value)} placeholder="/assets/image.png" />
+            </div>
+
+            <div className="prop-row">
+                <div className="prop-group">
+                    <label>Image Size: {p.backgroundImageSize || 100}%</label>
+                    <input type="range" min="20" max="150" step="5" value={p.backgroundImageSize || 100} onChange={e => handleChange('backgroundImageSize', parseInt(e.target.value))} />
+                </div>
+                <div className="prop-group">
+                    <label>Image Opacity: {p.backgroundImageOpacity || 100}%</label>
+                    <input type="range" min="0" max="100" step="5" value={p.backgroundImageOpacity || 100} onChange={e => handleChange('backgroundImageOpacity', parseInt(e.target.value))} />
+                </div>
+            </div>
         </div>
     );
 };

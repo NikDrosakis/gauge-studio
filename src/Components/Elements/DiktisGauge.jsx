@@ -7,7 +7,7 @@ const DiktisGauge = ({ props: p, isSelected, onSelect, onDragEnd, position, size
     const [isDragging, setIsDragging] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
 
-    const { data, subscribeToSensor } = usePLCData();
+    const { data, subscribeToSensor } = usePLCData();// ← data αλλάζει κάθε 1 sec
     const [currentValue, setCurrentValue] = useState(p.value || 0);
 
     const dragStartPos = useRef({ x: 0, y: 0 });
@@ -15,6 +15,7 @@ const DiktisGauge = ({ props: p, isSelected, onSelect, onDragEnd, position, size
     const resizeStartPos = useRef({ x: 0, y: 0 });
     const resizeStartSize = useRef({ width: 0, height: 0 });
     const resizeCorner = useRef(null);
+
 
     useEffect(() => {
         if (p.sensorTag && p.sensorTag !== '') {
@@ -25,15 +26,41 @@ const DiktisGauge = ({ props: p, isSelected, onSelect, onDragEnd, position, size
         }
     }, [p.sensorTag]);
 
-    
-    // Load background image
+
+    // Live update from PLC
+    useEffect(() => {
+        if (p.sensorTag && data[p.sensorTag] !== undefined) {
+            console.log(`📊 ${p.sensorTag} = ${data[p.sensorTag]}`);
+            setCurrentValue(data[p.sensorTag]);
+        }
+    }, [data, p.sensorTag]);
+
+    // Also update when manual value changes (when no sensor)
+    useEffect(() => {
+        if (!p.sensorTag) {
+            setCurrentValue(p.value);
+        }
+    }, [p.value, p.sensorTag]);
+
+// Load background image - Υποστηρίζει local και external
     useEffect(() => {
         if (p.backgroundImage && p.backgroundImage !== '') {
             const img = new Image();
-            img.crossOrigin = "Anonymous";
+
+            // Μόνο για external URLs βάζουμε crossOrigin
+            if (p.backgroundImage.startsWith('http')) {
+                img.crossOrigin = "Anonymous";
+            }
+
             img.src = p.backgroundImage;
-            img.onload = () => setLoadedImage(img);
-            img.onerror = () => setLoadedImage(null);
+            img.onload = () => {
+                console.log("✅ Image loaded:", p.backgroundImage);
+                setLoadedImage(img);
+            };
+            img.onerror = (err) => {
+                console.error("❌ Failed to load:", p.backgroundImage);
+                setLoadedImage(null);
+            };
         } else {
             setLoadedImage(null);
         }
@@ -102,7 +129,7 @@ const DiktisGauge = ({ props: p, isSelected, onSelect, onDragEnd, position, size
         }
 
         // Needle
-        const normalized = Math.min(1, Math.max(0, (p.value - p.min) / (p.max - p.min)));
+        const normalized = Math.min(1, Math.max(0, (currentValue - p.min) / (p.max - p.min)));
         const angleRange = p.endAngle - p.startAngle;
         const needleAngle = p.startAngle + (normalized * angleRange);
         const needleRad = (needleAngle * Math.PI) / 180;
@@ -136,7 +163,7 @@ const DiktisGauge = ({ props: p, isSelected, onSelect, onDragEnd, position, size
             ctx.font = `bold ${fontSize}px 'Verdana'`;
             ctx.fillStyle = p.pointerColor;
             ctx.textAlign = "center";
-            ctx.fillText(`${Math.round(p.value)}${p.unit}`, centerX, centerY - radius - 10);
+            ctx.fillText(`${Math.round(currentValue)}${p.unit}`, centerX, centerY - radius - 10);
         }
 
         // Title
@@ -147,7 +174,7 @@ const DiktisGauge = ({ props: p, isSelected, onSelect, onDragEnd, position, size
             ctx.textAlign = "center";
             ctx.fillText(p.title, centerX, centerY + radius + 15);
         }
-    }, [p, loadedImage, size]);
+    }, [p, loadedImage, size, currentValue]);
 
     // Drag handlers
     const handleMouseDown = (e) => {

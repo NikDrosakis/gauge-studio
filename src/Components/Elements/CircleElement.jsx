@@ -1,11 +1,46 @@
-import React, { useRef } from 'react';
+// src/Components/Elements/CircleElement.jsx
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 
-const CircleElement = ({ props: p, isSelected, onSelect, onDragEnd, position, size, onContextMenu }) => {
+const CircleElement = ({ props: p, isSelected, onSelect, onDragEnd, position, size, onResizeEnd, onContextMenu }) => {
     const divRef = useRef(null);
-    const [isDragging, setIsDragging] = React.useState(false);
-    const dragStartPos = React.useRef({ x: 0, y: 0 });
-    const dragStartElementPos = React.useRef({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [isResizing, setIsResizing] = useState(false);
+    const [loadedImage, setLoadedImage] = useState(null);
 
+    const dragStartPos = useRef({ x: 0, y: 0 });
+    const dragStartElementPos = useRef({ x: 0, y: 0 });
+    const resizeStartPos = useRef({ x: 0, y: 0 });
+    const resizeStartSize = useRef({ width: 0, height: 0 });
+    const resizeCorner = useRef(null);
+
+    const currentWidth = size?.width || 100;
+    const currentHeight = size?.height || 100;
+
+    // Load background image
+    useEffect(() => {
+        if (p.backgroundImage && p.backgroundImage !== '') {
+            const img = new Image();
+            if (p.backgroundImage.startsWith('http')) {
+                img.crossOrigin = "Anonymous";
+            }
+            img.src = p.backgroundImage;
+            img.onload = () => setLoadedImage(img);
+            img.onerror = () => setLoadedImage(null);
+        } else {
+            setLoadedImage(null);
+        }
+    }, [p.backgroundImage]);
+
+    // Background style
+    const bgStyle = loadedImage ? {
+        backgroundImage: `url(${p.backgroundImage})`,
+        backgroundSize: `${p.backgroundImageSize || 100}%`,
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        opacity: (p.backgroundImageOpacity || 100) / 100,
+    } : {};
+
+    // Drag handlers
     const handleMouseDown = (e) => {
         if (!isSelected) return;
         e.stopPropagation();
@@ -14,22 +49,46 @@ const CircleElement = ({ props: p, isSelected, onSelect, onDragEnd, position, si
         dragStartElementPos.current = { x: position.x, y: position.y };
     };
 
-    const handleMouseMove = React.useCallback((e) => {
-        if (!isDragging) return;
-        const dx = e.clientX - dragStartPos.current.x;
-        const dy = e.clientY - dragStartPos.current.y;
-        onDragEnd({
-            x: dragStartElementPos.current.x + dx,
-            y: dragStartElementPos.current.y + dy
-        });
-    }, [isDragging, onDragEnd]);
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            const dx = e.clientX - dragStartPos.current.x;
+            const dy = e.clientY - dragStartPos.current.y;
+            onDragEnd({
+                x: dragStartElementPos.current.x + dx,
+                y: dragStartElementPos.current.y + dy
+            });
+        } else if (isResizing && resizeCorner.current) {
+            const dx = e.clientX - resizeStartPos.current.x;
+            const dy = e.clientY - resizeStartPos.current.y;
+            let newWidth = resizeStartSize.current.width;
+            let newHeight = resizeStartSize.current.height;
 
-    const handleMouseUp = React.useCallback(() => {
+            if (resizeCorner.current === 'se') {
+                newWidth = Math.max(30, resizeStartSize.current.width + dx);
+                newHeight = Math.max(30, resizeStartSize.current.height + dy);
+            } else if (resizeCorner.current === 'sw') {
+                newWidth = Math.max(30, resizeStartSize.current.width - dx);
+                newHeight = Math.max(30, resizeStartSize.current.height + dy);
+            } else if (resizeCorner.current === 'ne') {
+                newWidth = Math.max(30, resizeStartSize.current.width + dx);
+                newHeight = Math.max(30, resizeStartSize.current.height - dy);
+            } else if (resizeCorner.current === 'nw') {
+                newWidth = Math.max(30, resizeStartSize.current.width - dx);
+                newHeight = Math.max(30, resizeStartSize.current.height - dy);
+            }
+
+            onResizeEnd?.({ width: newWidth, height: newHeight });
+        }
+    }, [isDragging, isResizing, onDragEnd, onResizeEnd]);
+
+    const handleMouseUp = useCallback(() => {
         setIsDragging(false);
+        setIsResizing(false);
+        resizeCorner.current = null;
     }, []);
 
-    React.useEffect(() => {
-        if (isDragging) {
+    useEffect(() => {
+        if (isDragging || isResizing) {
             window.addEventListener('mousemove', handleMouseMove);
             window.addEventListener('mouseup', handleMouseUp);
         }
@@ -37,10 +96,15 @@ const CircleElement = ({ props: p, isSelected, onSelect, onDragEnd, position, si
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isDragging, handleMouseMove, handleMouseUp]);
+    }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
 
-    const width = size?.width || 100;
-    const height = size?.height || 100;
+    const handleResizeStart = (e, corner) => {
+        e.stopPropagation();
+        setIsResizing(true);
+        resizeCorner.current = corner;
+        resizeStartPos.current = { x: e.clientX, y: e.clientY };
+        resizeStartSize.current = { width: currentWidth, height: currentHeight };
+    };
 
     return (
         <div
@@ -50,12 +114,13 @@ const CircleElement = ({ props: p, isSelected, onSelect, onDragEnd, position, si
                 position: 'absolute',
                 left: position.x,
                 top: position.y,
-                width: width,
-                height: height,
+                width: currentWidth,
+                height: currentHeight,
                 backgroundColor: p.backgroundColor || '#e74c3c',
-                border: p.border || '1px solid #ccc',
+                border: `${p.borderWidth || 1}px solid ${p.borderColor || '#c0392b'}`,
                 borderRadius: '50%',
                 cursor: isSelected ? 'move' : 'pointer',
+                ...bgStyle
             }}
             onClick={(e) => { e.stopPropagation(); onSelect(); }}
             onMouseDown={handleMouseDown}
